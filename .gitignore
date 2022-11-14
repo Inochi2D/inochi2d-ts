@@ -21,6 +21,7 @@
 *.suo
 *.sw?
 .DS_Store
+.eslintcache
 .pnp.*
 lerna-debug.log*
 npm-debug.log*

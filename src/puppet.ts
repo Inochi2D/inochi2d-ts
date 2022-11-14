@@ -58,31 +58,31 @@ export class Puppet {}
 
 export class PuppetMeta {
   /** Artist(s) of the puppet */
-  public artist: string = ''
+  public artist = ''
 
   /** Contact informatin of the first author */
-  public contact: string = ''
+  public contact = ''
 
   /** Copyright string */
-  public copyright: string = ''
+  public copyright = ''
 
   /** URL of license */
-  public licenseUrl: string = ''
+  public licenseUrl = ''
 
   /** Name of the puppet */
-  public name: string = ''
+  public name = ''
 
   /**
    * Whether the puppet should preserve pixel borders. This
    * feature is mainly useful for puppets which use pixel art.
    */
-  public preservePixels: boolean = false
+  public preservePixels = false
 
   /** Link to the origin of this puppet */
-  public reference: string = ''
+  public reference = ''
 
   /** Rigger(s) of the puppet */
-  public rigger: string = ''
+  public rigger = ''
 
   /** Usage rights of the puppet */
   public rights: PuppetUsageRights = new PuppetUsageRights()
@@ -94,12 +94,12 @@ export class PuppetMeta {
    * The version of the Inochi2D spec that was used when
    * creating this model
    */
-  public version: string = '1.0-alpha'
+  public version = '1.0-alpha'
 }
 
 export class PuppetUsageRights {
   /** Whether commercial use is allowed */
-  public allowCommercial: boolean = false
+  public allowCommercial = false
 
   /** Who is allowed to use the puppet? */
   public allowedUsers: PuppetAllowedUsers = PuppetAllowedUsers.OnlyAuthor
@@ -111,11 +111,11 @@ export class PuppetUsageRights {
   public allowRedistribution: PuppetAllowedRedistribution = PuppetAllowedRedistribution.Prohibited
 
   /** Whether sexual content is allowed */
-  public allowSexual: boolean = false
+  public allowSexual = false
 
   /** Whether violent content is allowed */
-  public allowViolence: boolean = false
+  public allowViolence = false
 
   /** Whether the author(s) must be attributed for use */
-  public requireAttribution: boolean = false
+  public requireAttribution = false
 }
