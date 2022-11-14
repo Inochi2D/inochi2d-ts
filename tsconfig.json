@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
+    "declaration": true,
     "esModuleInterop": true,
     "isolatedModules": true,
     "lib": ["dom", "esnext"],
     "module": "esnext",
     "moduleResolution": "node",
-    "noEmit": true,
+    "noEmit": false,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
+    "outDir": "./dist/",
     "paths": {
       "@/*": ["./src/*"]
     },
