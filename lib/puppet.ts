@@ -5,6 +5,7 @@
     Authors: Luna Nielsen
 */
 import * as THREE from 'three';
+import { Node } from './nodes/node';
 
 /**
     Magic value meaning that the model has no thumbnail
@@ -172,4 +173,5 @@ export
 class Puppet {
     meta: PuppetMeta = new PuppetMeta();
     textures: Array<THREE.Texture> = Array<THREE.Texture>(0);
+    nodes: Node = new Node();
 }

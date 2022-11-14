@@ -5,11 +5,16 @@
     Authors: Luna Nielsen
 */
 // import * as THREE from 'three';
+import { Transform } from "../math/transform";
 
 /**
  * Basetype for all nodes
 */
 export
-class InNode {
-
+class Node {
+    children: Node[] = new Array<Node>(0);
+    enabled: boolean = true;
+    lockToRoot: boolean = false;
+    name: string = "";
+    transform: Transform = new Transform();
 }

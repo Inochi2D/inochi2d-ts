@@ -65,22 +65,16 @@ export async function inImport(filebuffer: Uint8Array): Promise<Puppet> {
         }
     });
 
-    return new Promise(async (complete, failure) => {
+    return (async () => {
 
-        // Wait for all the texture loading to resolve
-        try {
-            let textures = await Promise.all(textureLoads);
-            let puppet: Puppet = JSON.parse(parsed.payload);
-            let textureList: THREE.Texture[] = [];
+        // Wait for textures and parse puppet
+        let textures = await Promise.all(textureLoads);
+        let puppet: Puppet = JSON.parse(parsed.payload);
 
-            // Extract texture from promise in to texture list
-            textures.forEach((texture: any) => { textureList.push(texture); });
+        // Apply textures
+        puppet.textures = Array.from(textures) as any;
 
-            // Apply textures and mark as complete
-            puppet.textures = textureList;
-            complete(puppet);
-        } catch(reason) {
-            failure(reason);
-        }
-    });
+        // Return puppet
+        return puppet;
+    })();
 }
