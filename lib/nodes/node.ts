@@ -4,7 +4,7 @@
     
     Authors: Luna Nielsen
 */
-import * as THREE from 'three';
+// import * as THREE from 'three';
 
 /**
  * Basetype for all nodes

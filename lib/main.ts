@@ -5,3 +5,4 @@
     Authors: Luna Nielsen
 */
 export { Puppet } from './puppet'
+export * from './inp'
