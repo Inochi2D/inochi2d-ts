@@ -4,7 +4,7 @@
     
     Authors: Luna Nielsen
 */
-import * as THREE from 'three';
+import { Texture } from 'three';
 import { Node } from './nodes/node';
 
 /**
@@ -172,6 +172,6 @@ class PuppetMeta {
 export 
 class Puppet {
     meta: PuppetMeta = new PuppetMeta();
-    textures: Array<THREE.Texture> = Array<THREE.Texture>(0);
+    textures: Array<Texture> = Array<Texture>(0);
     nodes: Node = new Node();
 }
