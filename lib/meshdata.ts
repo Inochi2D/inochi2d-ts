@@ -1,7 +1,7 @@
 /* 
     Inochi2D Part Mesh Data
 
-    Translated from Inochi2D by Luna Nielsen
+    Translated from work in Inochi2D by Luna Nielsen
     
     Copyright © 2020, Inochi2D Project
     Distributed under the 2-Clause BSD License, see LICENSE file.
@@ -172,61 +172,6 @@ class MeshData {
         newData.origin = new Vector2(this.origin!.x, this.origin!.y);
 
         return newData;
-    }
-
-    /**
-     * Serializes the MeshData object.
-     * @returns The serialized MeshData object.
-     */
-    serialize(): any {
-        const data: any = {
-            verts: this.vertices.map((v) => [v.x, v.y]),
-            indices: this.indices,
-            origin: this.origin!.toArray(),
-        };
-
-        if (this.uvs && this.uvs.length > 0) {
-            data.uvs = this.uvs.map((uv) => [uv.x, uv.y]);
-        }
-
-        if (this.gridAxes && this.gridAxes.length === 2) {
-            data.grid_axes = this.gridAxes;
-        }
-
-        return data;
-    }
-
-    /**
-     * Deserializes the MeshData object.
-     * @param data The serialized data to deserialize.
-     * @returns The deserialized MeshData object.
-     */
-    static deserialize(data: any): MeshData {
-        const meshData = new MeshData();
-
-        if (data.verts && Array.isArray(data.verts)) {
-            for (const [x, y] of data.verts) {
-                meshData.vertices.push(new Vector2(x, y));
-            }
-        }
-
-        if (data.uvs && Array.isArray(data.uvs)) {
-            meshData.uvs = data.uvs.map(([x, y]: [number, number]) => new Vector2(x, y));
-        }
-
-        if (data.indices && Array.isArray(data.indices)) {
-            meshData.indices = data.indices;
-        }
-
-        if (data.origin && Array.isArray(data.origin)) {
-            meshData.origin!.fromArray(data.origin);
-        }
-
-        if (data.grid_axes && Array.isArray(data.grid_axes)) {
-            meshData.gridAxes = data.grid_axes;
-        }
-
-        return meshData;
     }
 
     /**
@@ -457,8 +402,72 @@ class MeshData {
 
         return true; // Return true indicating that the grid was regenerated
     }
+
+
+    /**
+     * Serializes the MeshData object.
+     * @returns The serialized MeshData object.
+     */
+    serialize(): any {
+        const data: any = {
+            verts: this.vertices.map((v) => [v.x, v.y]),
+            indices: this.indices,
+            origin: this.origin!.toArray(),
+        };
+
+        if (this.uvs && this.uvs.length > 0) {
+            data.uvs = this.uvs.map((uv) => [uv.x, uv.y]);
+        }
+
+        if (this.gridAxes && this.gridAxes.length === 2) {
+            data.grid_axes = this.gridAxes;
+        }
+
+        return data;
+    }
+    
+    static deserialize(data: any): MeshData {
+        const meshData = new MeshData();
+    
+        if (data.verts && Array.isArray(data.verts)) {
+            for (let i = 0; i < data.verts.length; i += 2) {
+                const x = data.verts[i];
+                const y = data.verts[i + 1];
+                if (typeof x === 'number' && typeof y === 'number') {
+                    meshData.vertices.push(new Vector2(x, y));
+                } else {
+                    console.error('Unexpected values for vert coordinates:', x, y);
+                }
+            }
+        }
+    
+        if (data.uvs && Array.isArray(data.uvs)) {
+            meshData.uvs = [];
+            for (let i = 0; i < data.uvs.length; i += 2) {
+                const x = data.uvs[i];
+                const y = data.uvs[i + 1];
+                if (typeof x === 'number' && typeof y === 'number') {
+                    meshData.uvs.push(new Vector2(x, y));
+                } else {
+                    console.error('Unexpected values for uv coordinates:', x, y);
+                }
+            }
+        }
+    
+        if (data.indices && Array.isArray(data.indices)) {
+            meshData.indices = data.indices;
+        }
+    
+        if (data.origin && Array.isArray(data.origin)) {
+            meshData.origin!.fromArray(data.origin);
+        }
+    
+        if (data.grid_axes && Array.isArray(data.grid_axes)) {
+            meshData.gridAxes = data.grid_axes;
+        }
+    
+        return meshData;
+    }    
 }
-
-
 
 export { MeshData };

@@ -4,5 +4,5 @@
     
     Authors: Luna Nielsen
 */
-export { Puppet } from './puppet'
-export * from './inp'
+export * as Puppet from './puppet'
+export * as INP from './inp'

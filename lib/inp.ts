@@ -4,7 +4,7 @@
     
     Authors: Luna Nielsen
 */
-import { Puppet } from "./puppet";
+import { Puppet, deserializePuppet } from "./puppet";
 import * as THREE from 'three';
 import { Parser } from "binary-parser";
 import { decode } from "fast-png";
@@ -35,7 +35,7 @@ export async function inImport(filebuffer: Uint8Array): Promise<Puppet> {
         switch(t) {
             case 0:
                 textureLoads.push(
-                    new Promise((complete, failure) => {
+                    new Promise((complete, _) => {
                         // Load PNG file from memory stream
                         let png = decode(data)
                         let texture = new THREE.DataTexture(png.data, png.width, png.height);
@@ -66,10 +66,11 @@ export async function inImport(filebuffer: Uint8Array): Promise<Puppet> {
     });
 
     return (async () => {
-
         // Wait for textures and parse puppet
         let textures = await Promise.all(textureLoads);
-        let puppet: Puppet = JSON.parse(parsed.payload);
+        let puppet: Puppet = deserializePuppet(JSON.parse(parsed.payload), textures);
+
+        console.log(parsed.payload)
 
         // Apply textures
         puppet.textures = Array.from(textures) as any;
