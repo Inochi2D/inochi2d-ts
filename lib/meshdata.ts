@@ -1,5 +1,7 @@
 /* 
     Inochi2D Part Mesh Data
+
+    Translated from Inochi2D by Luna Nielsen
     
     Copyright © 2020, Inochi2D Project
     Distributed under the 2-Clause BSD License, see LICENSE file.
@@ -455,14 +457,8 @@ class MeshData {
 
         return true; // Return true indicating that the grid was regenerated
     }
-
-
-    /**
-     * Prints information about the mesh data to the console.
-     */
-    dbg(): void {
-        console.log(`${this.vertices.length} ${this.uvs?.length} ${this.indices.length}`);
-    }
 }
+
+
 
 export { MeshData };

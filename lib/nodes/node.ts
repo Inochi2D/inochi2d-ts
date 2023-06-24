@@ -8,13 +8,20 @@
 import { Transform } from "../math/transform";
 
 /**
+ * Represents the Inox Node UUID.
+ */
+export type NodeUuid = number;
+
+/**
  * Basetype for all nodes
-*/
-export
-class Node {
-    children: Node[] = new Array<Node>(0);
+ */
+export class Node {
+    type: string = "";
+    uuid: NodeUuid = -1;
+    name?: string;
     enabled: boolean = true;
-    lockToRoot: boolean = false;
-    name: string = "";
+    zsort: number = 0;
     transform: Transform = new Transform();
+    children: Node[] = new Array<Node>(0);
+    lockToRoot: boolean = false;
 }

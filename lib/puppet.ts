@@ -12,8 +12,7 @@ import { Node } from './nodes/node';
 */
 export const NO_THUMBNAIL = 4294967295;
 
-export
-enum PuppetAllowedUsers {
+export enum PuppetAllowedUsers {
     /**
         Only the author(s) are allowed to use the puppet
     */
@@ -30,8 +29,7 @@ enum PuppetAllowedUsers {
     Everyone = "everyone"
 }
 
-export 
-enum PuppetAllowedRedistribution {
+export enum PuppetAllowedRedistribution {
     /**
         Redistribution is prohibited
     */
@@ -53,8 +51,7 @@ enum PuppetAllowedRedistribution {
     CopyleftLicense = "copyleftLicense"
 }
 
-export
-enum PuppetAllowedModification {
+export enum PuppetAllowedModification {
     /**
         Modification is prohibited
     */
@@ -72,8 +69,7 @@ enum PuppetAllowedModification {
     AllowRedistribute = "allowRedistribute",
 }
 
-export
-class PuppetUsageRights {
+export class PuppetUsageRights {
     /**
         Who is allowed to use the puppet?
     */
@@ -110,8 +106,7 @@ class PuppetUsageRights {
     requireAttribution: boolean = false;
 }
 
-export
-class PuppetMeta {
+export class PuppetMeta {
 
     /**
         Name of the puppet
@@ -169,8 +164,7 @@ class PuppetMeta {
     preservePixels: boolean = false;
 }
 
-export 
-class Puppet {
+export class Puppet {
     meta: PuppetMeta = new PuppetMeta();
     textures: Array<Texture> = Array<Texture>(0);
     nodes: Node = new Node();
