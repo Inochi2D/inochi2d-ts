@@ -1,3 +1,14 @@
+/* 
+    Inochi2D Parameter
+
+    Translated from work in Inox2D by Speykious 
+    
+    Copyright © 2022, Inochi2D Project
+    Distributed under the 2-Clause BSD License, see LICENSE file.
+    
+    Authors: Speykious 
+ */
+
 import { Matrix4, Vector2 } from 'three';
 
 enum InterpolateMode {

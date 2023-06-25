@@ -1,3 +1,12 @@
+/*
+    Testing script.
+
+    Copyright © 2023, Inochi2D Project
+    Distributed under the 2-Clause BSD License, see LICENSE file.
+    
+    Authors: FartDraws
+*/
+
 import * as Inochi2D from '../main'
 import * as THREE from 'three';
 import { renderPuppet } from '../renderer/renderer';
@@ -13,12 +22,12 @@ const camera = new THREE.OrthographicCamera(
     cameraWidth / 2,
     cameraHeight / 2,
     cameraHeight / -2,
-    0.1,
+    0.01,
     100000
 );
 
 // Set camera position
-camera.position.set(0, 1, 5);
+camera.position.set(0, 1, 500);
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);

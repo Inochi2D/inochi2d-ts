@@ -75,6 +75,7 @@ export class Node {
     parent: Node | null = null;
     lockToRoot: boolean = false;
     actualTransform: Transform = new Transform();
+    actualZsort: number = 0;
 
     /**
      * Calculates the transform of this node.
@@ -86,6 +87,7 @@ export class Node {
         // If this has a parent, orient transform in relation to parent
         if (this.parent == null) {
             this.actualTransform = this.transform;
+            this.actualZsort = this.zsort;
         } else {
             const newTransform = new Transform();
             newTransform.rot = this.parent.actualTransform.rot.clone().add(this.transform.rot);
@@ -94,6 +96,7 @@ export class Node {
                 this.parent.actualTransform.scale.y * this.transform.scale.y);
 
             this.actualTransform = newTransform;
+            this.actualZsort = this.parent.actualZsort + this.zsort;
         }
     }
 

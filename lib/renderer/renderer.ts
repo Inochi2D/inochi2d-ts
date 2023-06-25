@@ -1,3 +1,12 @@
+/*
+    THREE.JS-based renderer
+
+    Copyright © 2023, Inochi2D Project
+    Distributed under the 2-Clause BSD License, see LICENSE file.
+    
+    Authors: FartDraws
+*/
+
 import * as THREE from "three";
 import { MeshData } from "../meshdata";
 import { BlendMode, Node, Part } from "../nodes/node";
@@ -6,9 +15,9 @@ import { Puppet } from "../puppet";
 
 const blend_modes = [
     { _blendmode: BlendMode.Normal, _constant: THREE.NormalBlending },
-    { _blendmode: BlendMode.Screen, _constant: THREE.NoBlending },
-    { _blendmode: BlendMode.ColorDodge, _constant: THREE.NoBlending },
-    { _blendmode: BlendMode.Multiply, _constant: THREE.NoBlending }
+    { _blendmode: BlendMode.Screen, _constant: THREE.MultiplyBlending  },
+    { _blendmode: BlendMode.ColorDodge, _constant: THREE.MultiplyBlending },
+    { _blendmode: BlendMode.Multiply, _constant: THREE.MultiplyBlending }
 ];
 
 // Function to create a mesh from MeshData
@@ -52,9 +61,14 @@ function createPartMesh(meshData: MeshData, textures: THREE.Texture[], blend_mod
 
     // If there's textures
     if (textures) {
-        console.log(blendModeData._blendmode.valueOf() + ", " + _constant.valueOf());
+        // console.log(blendModeData._blendmode.valueOf() + ", " + _constant.valueOf());
         const texture = textures[0]; // Using the first texture as an example
+
         material = new THREE.MeshBasicMaterial({ transparent: true, blending: _constant, map: texture });
+
+        if (_constant != THREE.NormalBlending)
+            material.opacity = 0;
+
     } else {
         material = new THREE.MeshBasicMaterial({ color: "pink", transparent: true, blending: _constant });
     }
@@ -62,34 +76,42 @@ function createPartMesh(meshData: MeshData, textures: THREE.Texture[], blend_mod
     return new THREE.Mesh(geometry, material);
 }
 
+let biggest_z_val = 0;
+let smallest_z_val = 0;
+
 // Function to recursively add nodes to the scene
 function processNode(node: Node, scene: THREE.Object3D, parent: THREE.Object3D, textures: THREE.Texture[]) {
-
     node.update();
+    let obj : THREE.Object3D = new THREE.Object3D();
 
+    // Set parts
     if (node instanceof Part) {
-        const mesh = createPartMesh(node.mesh, node.textures.map((idx) => textures[idx]), node.blend_mode);
+        obj = createPartMesh(node.mesh, node.textures.map((idx) => textures[idx]), node.blend_mode);
+    } 
 
-        mesh.position.set(node.actualTransform.trans.x, node.actualTransform.trans.y,
-            (node.zsort + ((node.parent !== null) ? node.parent.zsort : 0)) * -1);
-        mesh.rotation.x = node.actualTransform.rot.x;
-        mesh.rotation.y = node.actualTransform.rot.y;
-        mesh.rotation.z = node.actualTransform.rot.z;
-        mesh.scale.set(node.actualTransform.scale.x, node.actualTransform.scale.y, 1);
-
-        scene.add(mesh);
+    // Materials settings
+    if (obj instanceof THREE.Mesh) {
+        if (!node.enabled) obj.material.opacity = 0;
+        obj.material.alphaTest = 0.7;
     }
 
-    const threeNode = new THREE.Object3D();
-
-    parent.add(threeNode);
+    // Set transform
+    biggest_z_val = Math.max(node.transform.trans.z, biggest_z_val);
+    smallest_z_val = Math.min(node.transform.trans.z, smallest_z_val);
+    obj.position.set(node.transform.trans.x, node.transform.trans.y, -node.zsort);  // Enforce z-index in position
+    obj.scale.set(node.transform.scale.x, node.transform.scale.y, 1);               // Enforce z-index in render order
+    obj.rotation.x = node.transform.rot.x;
+    obj.rotation.y = node.transform.rot.y;
+    obj.rotation.z = node.transform.rot.z;
+    obj.renderOrder = -node.zsort;
+    parent.add(obj);
 
     // Process child nodes
     for (let child of node.children) {
-        processNode(child, scene, threeNode, textures);
+        processNode(child, scene, obj, textures);
     }
-
-    return threeNode;
+        
+    return obj;
 }
 
 
@@ -98,6 +120,8 @@ export function renderPuppet(puppet: Puppet, scene: THREE.Scene, camera: THREE.C
     // Process root node
     let rootNode = processNode(puppet.nodes, scene, scene, puppet.textures);
     scene.add(rootNode);
+
+    console.log("Loaded THREE.JS renderables. " + biggest_z_val + ", " + smallest_z_val);
 
     let grid = new THREE.GridHelper(30, 30, 0xffffff, 0x404040);
     grid.rotation.x = Math.PI * 0.5;

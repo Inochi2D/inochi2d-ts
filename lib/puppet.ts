@@ -1,3 +1,10 @@
+/*
+    Copyright © 2020, Inochi2D Project
+    Distributed under the 2-Clause BSD License, see LICENSE file.
+    
+    Authors: Luna Nielsen
+*/
+
 import { Texture } from 'three';
 import { Node, deserializeNode as deserializeNode } from './nodes/node';
 
@@ -56,5 +63,7 @@ export function deserializePuppet(json: any, textures: Texture[]): Puppet {
   puppet.meta = json.meta;
   puppet.textures = textures;
   puppet.nodes = deserializeNode(json.nodes);
+  puppet.nodes.transform.scale.y *= -1; // Weird rotation moment!
+  puppet.nodes.update();
   return puppet;
 }
