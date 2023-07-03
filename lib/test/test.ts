@@ -15,7 +15,7 @@ const scene = new THREE.Scene();
 const aspectRatio = window.innerWidth / window.innerHeight;
 
 // Set up the parameters for the orthographic camera
-const cameraWidth = 10000; // Width of the camera view
+const cameraWidth = 6000; // Width of the camera view
 const cameraHeight = cameraWidth / aspectRatio; // Height of the camera view
 const camera = new THREE.OrthographicCamera(
     cameraWidth / -2,
@@ -23,16 +23,15 @@ const camera = new THREE.OrthographicCamera(
     cameraHeight / 2,
     cameraHeight / -2,
     0.01,
-    100000
+    10000
 );
 
 // Set camera position
 camera.position.set(0, 1, 500);
 
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-
 
 async function downloadFile(url: string): Promise<Uint8Array> {
     const response = await fetch(url);

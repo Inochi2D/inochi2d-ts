@@ -6,7 +6,8 @@
 */
 
 import { Texture } from 'three';
-import { Node, deserializeNode as deserializeNode } from './nodes/node';
+import { Node } from './nodes/node';
+import { deserializeNode as deserializeNode } from "./nodes/serialiser";
 
 export const NO_THUMBNAIL = 4294967295;
 

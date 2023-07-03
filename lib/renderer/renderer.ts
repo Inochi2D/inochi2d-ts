@@ -8,12 +8,12 @@
 */
 
 import * as THREE from "three";
-import { MeshData } from "../meshdata";
-import { BlendMode, Node, Part } from "../nodes/node";
+import { BlendMode, Node } from "../nodes/node";
+import { Part } from "../nodes/drawable";
 import { Puppet } from "../puppet";
 
 
-const blend_modes = [
+export const blend_modes = [
     { _blendmode: BlendMode.Normal, _constant: THREE.NormalBlending },
     { _blendmode: BlendMode.Screen, _constant: THREE.MultiplyBlending  },
     { _blendmode: BlendMode.ColorDodge, _constant: THREE.MultiplyBlending },
@@ -21,36 +21,7 @@ const blend_modes = [
 ];
 
 // Function to create a mesh from MeshData
-function createPartMesh(meshData: MeshData, textures: THREE.Texture[], blend_mode: BlendMode) {
-    const geometry = new THREE.BufferGeometry();
-
-    // Set vertices
-    const vertices = [];
-    for (let vertex of meshData.vertices) {
-        const offset : THREE.Vector2 = meshData.origin ? meshData.origin : new THREE.Vector2(0,0);
-        vertices.push(vertex.x + offset.x, vertex.y + offset.y, 0);
-    }
-
-    const positionNumComponents = 3;
-    geometry.setAttribute(
-        'position',
-        new THREE.BufferAttribute(new Float32Array(vertices), positionNumComponents));
-
-    // Set UVs if available
-    if (meshData.uvs) {
-        const uvs = [];
-        for (let uv of meshData.uvs) {
-            uvs.push(uv.x, uv.y);
-        }
-        const uvNumComponents = 2;
-        geometry.setAttribute(
-            'uv',
-            new THREE.BufferAttribute(new Float32Array(uvs), uvNumComponents));
-    }
-
-    // Set indices
-    geometry.setIndex(meshData.indices);
-
+function shadePartMesh(textures: THREE.Texture[], blend_mode: BlendMode) {
     // Set material with textures
     let material;
 
@@ -64,7 +35,7 @@ function createPartMesh(meshData: MeshData, textures: THREE.Texture[], blend_mod
         // console.log(blendModeData._blendmode.valueOf() + ", " + _constant.valueOf());
         const texture = textures[0]; // Using the first texture as an example
 
-        material = new THREE.MeshBasicMaterial({ transparent: true, blending: _constant, map: texture });
+        material = new THREE.MeshBasicMaterial({ transparent: true, blending: _constant, map: texture, depthWrite: false });
 
         if (_constant != THREE.NormalBlending)
             material.opacity = 0;
@@ -73,59 +44,34 @@ function createPartMesh(meshData: MeshData, textures: THREE.Texture[], blend_mod
         material = new THREE.MeshBasicMaterial({ color: "pink", transparent: true, blending: _constant });
     }
 
-    return new THREE.Mesh(geometry, material);
+    return material;
 }
 
 let biggest_z_val = 0;
 let smallest_z_val = 0;
 
 // Function to recursively add nodes to the scene
-function processNode(node: Node, scene: THREE.Object3D, parent: THREE.Object3D, textures: THREE.Texture[]) {
+function createNode(node: Node, scene: THREE.Object3D, parent: THREE.Object3D, textures: THREE.Texture[]) {
+    node.create(textures);
     node.update();
-    let obj : THREE.Object3D = new THREE.Object3D();
-
-    // Set parts
-    if (node instanceof Part) {
-        obj = createPartMesh(node.mesh, node.textures.map((idx) => textures[idx]), node.blend_mode);
-    } 
-
-    // Materials settings
-    if (obj instanceof THREE.Mesh) {
-        if (!node.enabled) obj.material.opacity = 0;
-        obj.material.alphaTest = 0.7;
-    }
-
-    // Set transform
-    biggest_z_val = Math.max(node.transform.trans.z, biggest_z_val);
-    smallest_z_val = Math.min(node.transform.trans.z, smallest_z_val);
-    obj.position.set(node.transform.trans.x, node.transform.trans.y, -node.zsort);  // Enforce z-index in position
-    obj.scale.set(node.transform.scale.x, node.transform.scale.y, 1);               // Enforce z-index in render order
-    obj.rotation.x = node.transform.rot.x;
-    obj.rotation.y = node.transform.rot.y;
-    obj.rotation.z = node.transform.rot.z;
-    obj.renderOrder = -node.zsort;
-    parent.add(obj);
+    parent.add(node.threeObj);
 
     // Process child nodes
     for (let child of node.children) {
-        processNode(child, scene, obj, textures);
+        createNode(child, scene, node.threeObj, textures);
     }
         
-    return obj;
+    return node.threeObj;
 }
 
 
 // Function to render a Puppet
 export function renderPuppet(puppet: Puppet, scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.Renderer) {
     // Process root node
-    let rootNode = processNode(puppet.nodes, scene, scene, puppet.textures);
+    let rootNode = createNode(puppet.nodes, scene, scene, puppet.textures);
     scene.add(rootNode);
 
     console.log("Loaded THREE.JS renderables. " + biggest_z_val + ", " + smallest_z_val);
-
-    let grid = new THREE.GridHelper(30, 30, 0xffffff, 0x404040);
-    grid.rotation.x = Math.PI * 0.5;
-    scene.add(grid);
 
     // Render loop
     const animate = function () {
