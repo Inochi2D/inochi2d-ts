@@ -70,7 +70,7 @@ export async function inImport(filebuffer: Uint8Array): Promise<Puppet> {
         let textures = await Promise.all(textureLoads);
         let puppet: Puppet = deserializePuppet(JSON.parse(parsed.payload), textures);
 
-        console.log(parsed.payload)
+        // console.log(parsed.payload)
 
         // Apply textures
         puppet.textures = Array.from(textures) as any;

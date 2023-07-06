@@ -1,29 +1,55 @@
 import { deserializeTransform } from "../math/transform";
 import { MeshData } from "../meshdata";
 import { Node, BlendMode, PathDeform } from "./node";
-import { Drawable, Part, Mask } from "./drawable";
+import { Drawable, Part, Mask, MaskData } from "./drawable";
 
-function deserializeBaseProperties(json: any, node: Node): void {
+function deserializeBaseProperties(puppet: any, json: any, node: Node) {
+    node.puppet = puppet;
     node.type = json.type;
     node.uuid = json.uuid;
     node.name = json.name;
     node.enabled = json.enabled !== undefined ? json.enabled : node.enabled;
     node.zsort = json.zsort !== undefined ? json.zsort : node.zsort;
     node.transform = json.transform !== undefined ? deserializeTransform(json.transform) : node.transform;
-    node.children = json.children !== undefined ? json.children.map((child: any) => deserializeNode(child, node)) : node.children;
+    node.children = json.children !== undefined ? json.children.map((child: any) => deserializeNode(puppet, child, node)) : node.children;
     node.lockToRoot = json.children !== undefined ? json.lockToRoot : node.lockToRoot;
+
+    return node;
 }
 
-function deserializeDrawable(json: any, drawable: Drawable): Drawable {
-    deserializeBaseProperties(json, drawable);
+function deserializeDrawable(puppet: any, json: any, drawable: Drawable): Drawable {
+    drawable = deserializeBaseProperties(puppet, json, drawable) as Drawable;
+
     // Deserialize additional properties specific to Drawable
     drawable.mesh = MeshData.deserialize(json.mesh);
+
+    // Populate the masks
+    drawable.masks = json.masks !== undefined ? json.masks.map((mask: any) => {
+        const maskData : MaskData = new MaskData();
+        // Populate mode
+        if (mask.mode)
+            switch (json.blend_mode) {
+                case "Mask":
+                    maskData.mode = BlendMode.ClipToLower;
+                    break;
+                case "Dodge":
+                    maskData.mode = BlendMode.SliceFromLower;
+                    break;
+                default:
+                    maskData.mode = BlendMode.Normal;
+            }
+        // Populate source
+        maskData.source = mask.source;
+        return maskData
+    }) : drawable.children;
+
     return drawable;
 }
 
-function deserializePart(json: any): Part {
-    const part = new Part();
-    deserializeDrawable(json, part);
+function deserializePart(puppet: any, json: any): Part {
+    let part = new Part();
+    part = deserializeDrawable(puppet, json, part) as Part;
+
     // Deserialize additional properties specific to Part
     part.textures = json.textures;
     part.opacity = json.opacity;
@@ -52,25 +78,28 @@ function deserializePart(json: any): Part {
     return part;
 }
 
-function deserializeMask(json: any): Mask {
-    const mask = new Mask();
-    deserializeDrawable(json, mask);
+function deserializeMask(puppet: any, json: any): Mask {
+    let mask = new Mask();
+    mask = deserializeDrawable(puppet, json, mask) as Mask;
+    console.log("Serialised a mask");
+
     // Deserialize additional properties specific to Mask
     return mask;
 }
 
-function deserializePathDeform(json: any): PathDeform {
-    const pathDeform = new PathDeform();
-    deserializeBaseProperties(json, pathDeform);
+function deserializePathDeform(puppet: any, json: any): PathDeform {
+    let pathDeform = new PathDeform();
+    pathDeform = deserializeBaseProperties(puppet, json, pathDeform) as PathDeform;
+
     // Deserialize additional properties specific to PathDeform
     pathDeform.joints = json.joints;
     pathDeform.bindings = json.bindings;
     return pathDeform;
 }
 
-function deserializeCustomNode(json: any): Node {
-    const node = new Node();
-    deserializeBaseProperties(json, node);
+function deserializeCustomNode(puppet: any, json: any): Node {
+    let node = new Node();
+    node = deserializeBaseProperties(puppet, json, node);
     return node;
 }
 
@@ -80,25 +109,28 @@ function deserializeCustomNode(json: any): Node {
  * @param parent - The Node that may have called this.
  * @returns The deserialized object as the correct subclass.
  */
-export function deserializeNode(json: any, parent: Node | null = null): Node {
+export function deserializeNode(puppet: any, json: any, parent: Node | null = null): Node {
     let result = new Node();
     switch (json.type) {
         case "Part":
-            result = deserializePart(json);
+            result = deserializePart(puppet, json);
             break;
         case "Mask":
-            result = deserializeMask(json);
+            result = deserializeMask(puppet, json);
             break;
         case "PathDeform":
-            result = deserializePathDeform(json);
+            result = deserializePathDeform(puppet, json);
             break;
         default:
-            result = deserializeCustomNode(json);
+            result = deserializeCustomNode(puppet, json);
             break;
     }
 
     // Set the parent
     result.parent = parent;
+
+    // Add this node to the puppet
+    puppet.nodes.push(result);
 
     return result;
 }

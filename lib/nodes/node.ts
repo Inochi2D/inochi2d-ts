@@ -81,6 +81,7 @@ export class Node {
     children: Node[] = [];
 
     // Non-serialisables
+    puppet: any = null;                                             // Puppet
     threeObj: THREE.Object3D | THREE.Mesh = new THREE.Object3D();   // three.JS Node for rendering.
     parent: Node | null = null;                                     // Track the parent for easy traversal.
     lockToRoot: boolean = false;                                    // Whether to lock to root
@@ -129,7 +130,7 @@ export class Node {
     /**
      * Called on render, populates a THREE.Object3D materials.
      */
-    protected onCreateMaterials(textures: THREE.Texture[]) {}
+    protected onCreateMaterials() {}
 
     /**
      * Called on update.
@@ -141,9 +142,9 @@ export class Node {
     /**
      * Called on render.
      */
-    create(textures: THREE.Texture[]) {
+    create() {
         this.onCreateMesh();
-        this.onCreateMaterials(textures);
+        this.onCreateMaterials();
     }
 }
 

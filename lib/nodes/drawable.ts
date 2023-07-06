@@ -2,12 +2,22 @@ import { MeshData } from "../meshdata";
 import * as THREE from "three";
 import { Node, MaskingMode, NodeUuid, BlendMode } from "./node";
 import { blend_modes } from "../renderer/renderer";
+import { Puppet } from "../puppet";
+
+/**
+ * Representation of Mask Data
+ */
+export class MaskData {
+    source: NodeUuid = -1;
+    mode: BlendMode = BlendMode.ClipToLower;
+}
 
 /**
  * Represents the drawable properties.
  */
 export class Drawable extends Node {
     mesh: MeshData = new MeshData();
+    masks: MaskData[] = [];
 
     /**
      * Called on render, populates a THREE.Object3D.
@@ -49,18 +59,34 @@ export class Drawable extends Node {
     /**
      * Called on render, populates a THREE.Object3D materials.
      */
-    protected onCreateMaterials(textures: THREE.Texture[]) {
+    protected onCreateMaterials() {
         if (this.threeObj instanceof THREE.Mesh && this.threeObj.material) {
             if (!this.enabled) this.threeObj.material.opacity = 0;
             this.threeObj.material.alphaTest = 0.7;
         }
+        super.onCreateMaterials();
     }
 }
 
 /**
  * Represents a mask with the same properties as a drawable.
  */
-export class Mask extends Drawable { }
+export class Mask extends Drawable {
+    protected onCreateMaterials(): void {
+        if (this.threeObj instanceof THREE.Mesh) {
+            console.log("mask material xd");
+            const material = new THREE.MeshPhongMaterial({ color: 'white' });
+            material.depthWrite = false;
+            material.stencilWrite = true;
+            material.stencilRef = this.uuid; // TODO: Assign this dynamically
+            material.stencilFunc = THREE.AlwaysStencilFunc;
+            material.stencilZPass = THREE.ReplaceStencilOp;
+    
+            this.threeObj.material = material;
+        }
+        super.onCreateMaterials();
+    }
+}
 
 /**
  * Represents a part with additional properties.
@@ -73,9 +99,11 @@ export class Part extends Drawable {
     masked_by: NodeUuid[] = [];
     blend_mode: BlendMode = BlendMode.Normal;
 
-    protected onCreateMaterials(textures: THREE.Texture[]) {
+    protected onCreateMaterials() {
         // Select the textures
-        const partTextures: THREE.Texture[] = this.textures.map((idx) => textures[idx]);
+        const partTextures: THREE.Texture[] = this.textures.map((idx) => {
+            return (this.puppet! as Puppet).textures[idx];
+        });
 
         // Materials settings
         if (this.threeObj instanceof THREE.Mesh) {
@@ -88,14 +116,40 @@ export class Part extends Drawable {
             const { _constant } = blendModeData;
 
             // If there's textures
-            if (textures) {
+            if (partTextures) {
                 // console.log(blendModeData._blendmode.valueOf() + ", " + _constant.valueOf());
                 const texture = partTextures[0]; // Using the first texture as an example
 
+                // Create our material
                 material = new THREE.MeshBasicMaterial({ transparent: true, blending: _constant, map: texture, depthWrite: false });
+                
+                // Write up some stencil logic
+                material.stencilWrite = true;
+                if (this.masks.length > 0) {
+                    // With masks, mask it
+                    material.stencilRef = this.masks.map((mask) => {
+                        return mask.source
+                    })[0];
+                    material.stencilFunc = THREE.EqualStencilFunc;
+                    material.stencilFail = THREE.KeepStencilOp;
+                    material.stencilZFail = THREE.KeepStencilOp;
+                    material.stencilZPass = THREE.KeepStencilOp;
+                } else {
+                    // Without a mask, assume we are the mask
+                    material.depthWrite = false;
+                    material.stencilWrite = true;
+                    material.stencilRef = this.uuid; // TODO: Assign this dynamically
+                    material.stencilFunc = THREE.AlwaysStencilFunc;
+                    material.stencilZPass = THREE.ReplaceStencilOp;
+                    material.stencilFail = THREE.ReplaceStencilOp;
+                    material.stencilZFail = THREE.ReplaceStencilOp;
+                    material.stencilZPass = THREE.ReplaceStencilOp;
+                }
 
-                if (_constant != THREE.NormalBlending)
-                    material.opacity = 0;
+                // TODO: Implement blending properly
+                if (_constant != THREE.NormalBlending) {
+                    // material.opacity = 0;
+                }
 
             } else {
                 material = new THREE.MeshBasicMaterial({ color: "pink", transparent: true, blending: _constant });
@@ -106,6 +160,6 @@ export class Part extends Drawable {
         }
 
         // Leave this last, since parent modifies this material
-        super.onCreateMaterials(textures);
+        super.onCreateMaterials();
     }
 }
