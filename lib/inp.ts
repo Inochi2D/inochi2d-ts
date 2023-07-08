@@ -10,6 +10,14 @@ import { Parser } from "binary-parser";
 import { decode } from "fast-png";
 import { decodeTga } from "@lunapaint/tga-codec";
 
+
+export async function downloadFile(url: string): Promise<Uint8Array> {
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer)
+    return uint8Array;
+}
+
 export async function inImport(filebuffer: Uint8Array): Promise<Puppet> {
 
     const textureparser = new Parser()
@@ -78,4 +86,8 @@ export async function inImport(filebuffer: Uint8Array): Promise<Puppet> {
         // Return puppet
         return puppet;
     })();
+}
+
+export async function inImportFromURL(url: string): Promise<Puppet> {
+    return await inImport(await (downloadFile(url)));
 }

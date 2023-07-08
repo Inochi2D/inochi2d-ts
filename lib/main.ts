@@ -6,3 +6,4 @@
 */
 export * as Puppet from './puppet'
 export * as INP from './inp'
+export * as Renderer from './renderer/renderer'
