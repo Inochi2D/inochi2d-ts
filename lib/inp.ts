@@ -4,11 +4,19 @@
     
     Authors: Luna Nielsen
 */
-import { Puppet } from "./puppet";
+import { Puppet, deserializePuppet } from "./puppet";
 import * as THREE from 'three';
 import { Parser } from "binary-parser";
 import { decode } from "fast-png";
 import { decodeTga } from "@lunapaint/tga-codec";
+
+
+export async function downloadFile(url: string): Promise<Uint8Array> {
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer)
+    return uint8Array;
+}
 
 export async function inImport(filebuffer: Uint8Array): Promise<Puppet> {
 
@@ -35,7 +43,7 @@ export async function inImport(filebuffer: Uint8Array): Promise<Puppet> {
         switch(t) {
             case 0:
                 textureLoads.push(
-                    new Promise((complete, failure) => {
+                    new Promise((complete, _) => {
                         // Load PNG file from memory stream
                         let png = decode(data)
                         let texture = new THREE.DataTexture(png.data, png.width, png.height);
@@ -66,10 +74,11 @@ export async function inImport(filebuffer: Uint8Array): Promise<Puppet> {
     });
 
     return (async () => {
-
         // Wait for textures and parse puppet
         let textures = await Promise.all(textureLoads);
-        let puppet: Puppet = JSON.parse(parsed.payload);
+        let puppet: Puppet = deserializePuppet(JSON.parse(parsed.payload), textures);
+
+        // console.log(parsed.payload)
 
         // Apply textures
         puppet.textures = Array.from(textures) as any;
@@ -77,4 +86,8 @@ export async function inImport(filebuffer: Uint8Array): Promise<Puppet> {
         // Return puppet
         return puppet;
     })();
+}
+
+export async function inImportFromURL(url: string): Promise<Puppet> {
+    return await inImport(await (downloadFile(url)));
 }
